@@ -13,5 +13,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: bash scripts/vendor-commons.sh
       - run: node test/spike.test.mjs
-# No Android / Gradle job. This VM and dasha-desk Verify do not build APKs.
+# No Android / Gradle job. dasha-desk Verify does not build APKs.
