@@ -9,7 +9,8 @@ import java.util.concurrent.Executors
 
 /**
  * Native screens. Not a WebView of getdasha.com.
- * Browse Tape + feed with no wallet. Fund signs only after tap.
+ * Browse Tape + feed with no wallet. The wallet boundary is reached only after a tap,
+ * but real MWA authorization, signing, submission, and confirmation are not implemented yet.
  */
 class MainActivity : AppCompatActivity() {
     private val tape = TapeStore()
@@ -23,13 +24,13 @@ class MainActivity : AppCompatActivity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val title = TextView(this).apply { text = "Pocket"; textSize = 28f }
         val lede = TextView(this).apply { text = "USDC on Solana. We don't hold it." }
-        body = TextView(this).apply { text = connectCopy() }
+        body = TextView(this).apply { text = walletStatusCopy() }
         root.addView(title)
         root.addView(lede)
-        root.addView(btn("Connect") { body.text = connectCopy() })
+        root.addView(btn("Connect (not implemented)") { body.text = walletStatusCopy() })
         root.addView(btn("Tape") { body.text = tapeCopy() })
         root.addView(btn("Bounties") { loadFeed() })
-        root.addView(btn("Fund") { fund() })
+        root.addView(btn("Fund (not implemented)") { fund() })
         root.addView(body)
         setContentView(root)
     }
@@ -39,9 +40,9 @@ class MainActivity : AppCompatActivity() {
         setOnClickListener { click() }
     }
 
-    private fun connectCopy(): String {
-        val vault = if (wallet.seedVaultPresent) "Seed Vault present" else "Seed Vault not on this device"
-        return "Wallet off until you tap.\n$vault"
+    private fun walletStatusCopy(): String {
+        val vault = if (wallet.seedVaultPresent) "Seed Vault detected" else "Seed Vault not detected on this device"
+        return "Wallet disconnected.\nConnection and signing are not implemented in this spike.\n$vault"
     }
 
     private fun tapeCopy(): String {
@@ -68,21 +69,21 @@ class MainActivity : AppCompatActivity() {
         io.execute {
             try {
                 val result = FundAction(wallet).fund("pocket-1")
-                tape.ingest(
-                    TapeLine(
-                        id = "funded:pocket-1:${result.signature}",
-                        kind = TapeKind.funded,
-                        line = "funded bounty #1",
-                        origin = "app",
-                        tx = result.signature,
-                    ),
-                )
-                runOnUiThread { body.text = "Funded" }
+                runOnUiThread {
+                    body.text = "Transaction returned a signature, but confirmation is not implemented.\n${result.signature}"
+                }
             } catch (_: UnsupportedOperationException) {
-                runOnUiThread { body.text = "Wallet" }
+                runOnUiThread {
+                    body.text = "Wallet connection and signing are not implemented in this spike."
+                }
             } catch (_: Exception) {
-                runOnUiThread { body.text = "Rejected" }
+                runOnUiThread { body.text = "Wallet request failed or was rejected." }
             }
         }
+    }
+
+    override fun onDestroy() {
+        io.shutdownNow()
+        super.onDestroy()
     }
 }
