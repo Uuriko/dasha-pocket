@@ -2,30 +2,57 @@
 
 Native Solana Mobile / Seeker client for the Commons bounty loop. **Not a WebView of getdasha.com.**
 
-This repo is the spike. dasha-desk stays static pastes + `commons/`. Android Gradle does not run on dasha-desk CI.
+This repository is the Android spike. `dasha-desk` retains the token-agnostic Commons schemas; Pocket consumes a reviewed snapshot without adding Android tooling to the web repository.
 
-## What this spike is
+## Current proof
 
-1. **Connect** — Mobile Wallet Adapter. Seed Vault when the OS has it.
-2. **Tape** — Commons human kinds: created / funded / submitted / selected / paid / cancelled. Not `/digest`.
-3. **Discovery** — public `GET https://www.getdasha.com/bounties.json` (`dasha-bounties-feed/v1`). Empty `listings` is honest.
-4. **One action** — Fund, after a tap. Wallet only then. Simulated signer for tests. No custody. No auto-sign. No keys in infra.
+- Android/Kotlin app source with wallet-free bounty-feed browsing and Seed Vault availability detection.
+- A `WalletPort` boundary that requests signing only after an explicit Fund action.
+- Simulated signing exists only in test source; the production app cannot display a simulated signature.
+- The public `dasha-bounties-feed/v1` response is parsed without requiring a wallet. Empty `listings` is valid.
+- GitHub Actions runs JVM tests, Android lint, `assembleDebug`, and uploads the debug APK plus lint report.
+- Gradle 8.9 wrapper is committed. Its JAR and distribution checksums match Gradle's published release values.
+- Vendored Commons files are pinned to immutable dasha-desk commit `d604802010f38539f5a4063b0469c6fe6591f969` and checked against expected Git blob IDs before replacement.
 
-Vendored Commons leaf files (no `adapter.mjs`):
+## Reproduce
+
+Requirements: JDK 17 and Android SDK 35.
+
+```bash
+bash scripts/vendor-commons.sh
+node test/spike.test.mjs
+./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+```
+
+The debug APK is written to:
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Product boundary
+
+1. **Connect** — Mobile Wallet Adapter is the intended authorization route. Seed Vault is detected where the OS exposes it.
+2. **Tape** — Commons events use human-readable states such as created, funded, submitted, selected, paid, and cancelled. This is not the price digest.
+3. **Discovery** — public `GET https://www.getdasha.com/bounties.json`; no wallet or login required.
+4. **Fund** — the wallet boundary is reached only after a user tap. No custody, automatic signing, embedded key, or server signer.
+
+Vendored Commons leaf files, excluding the getdasha-specific adapter:
 
 `commons/schema.mjs` `machine.mjs` `loop.mjs` `tape.mjs` `tx.mjs`
 
-```bash
-bash scripts/vendor-commons.sh   # pulls those five from dasha-desk
-node test/spike.test.mjs
-```
+## Remaining gates
 
-Kotlin parses the public JSON itself.
+This is not yet a production wallet or dApp Store release. `MwaWallet.connect()` and transaction signing remain deliberately unimplemented. Before grant or store claims, the project still needs:
 
-## What this is not
+- upgrade and compile against the maintained MWA client API;
+- real authorize, cancel, reauthorize, and disconnect behavior;
+- exact USDC transaction construction and wallet preview;
+- a harmless submitted and finalized devnet transaction;
+- ambiguous timeout reconciliation before retry;
+- Seeker/compatible-device testing;
+- release signing, Publisher Portal submission, and dApp Store review.
 
-No APK. No Play listing. No Seeker hardware in CI. No push. No camera / IRL drops. No SKR perks. No Helius SDK. No `plugin.jup.ag`.
+No mainnet payment, Play listing, push, camera/location drop, SKR feature, Helius integration, or live Seed Vault signing is claimed.
 
-Kotlin JUnit lives under `app/src/test/`. Needs Android SDK + Gradle. The spike Linux image had OpenJDK 21 and **no** Android SDK, **no** Gradle, **no** kotlinc — `assembleDebug` was not run.
-
-Issue: [Uuriko/dasha-desk#45](https://github.com/Uuriko/dasha-desk/issues/45).
+Tracking: [Dasha Pocket grant issue](https://github.com/Uuriko/dasha-desk/issues/45) and [Android reproducibility issue](https://github.com/Uuriko/dasha-pocket/issues/2).
