@@ -22,13 +22,19 @@ Requirements: JDK 17 and Android SDK 35.
 bash scripts/vendor-commons.sh
 node test/spike.test.mjs
 ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The debug APK is written to:
+The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-```text
-app/build/outputs/apk/debug/app-debug.apk
-```
+## Dependency integrity
+
+- The Gradle wrapper JAR is validated automatically by `gradle/actions/setup-gradle` and is pinned to Gradle 8.9.
+- `gradle-wrapper.properties` pins the official Gradle 8.9 binary-distribution SHA-256.
+- Gradle plugins and app libraries use exact versions; dynamic versions, version ranges, and snapshots are not allowed.
+- Commons source is pinned by immutable commit and Git blob IDs rather than a branch.
+- Before a release build, generate and review Gradle dependency-verification metadata/checksums after the MWA upgrade is finalized; do not freeze a checksum set around the currently stale MWA 2.0.3 dependency.
+- Signing keys, wallet secrets, RPC credentials, and release keystores must never be cached or committed.
 
 ## Product boundary
 
