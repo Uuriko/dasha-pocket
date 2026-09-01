@@ -8,6 +8,13 @@ import org.junit.Test
 
 class PocketSpikeTest {
     @Test
+    fun packageAndVersionAreCanonical() {
+        assertEquals("app.dasha.pocket", BuildConfig.APPLICATION_ID)
+        assertEquals("0.1.0", BuildConfig.VERSION_NAME)
+        assertEquals(1, BuildConfig.VERSION_CODE)
+    }
+
+    @Test
     fun emptyListingsAreHonest() {
         val json = javaClass.classLoader!!
             .getResourceAsStream("live-bounties.json")!!
