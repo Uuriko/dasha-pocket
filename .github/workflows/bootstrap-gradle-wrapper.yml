@@ -33,7 +33,7 @@ jobs:
           chmod 0755 gradlew
           actual_jar="$(sha256sum gradle/wrapper/gradle-wrapper.jar | cut -d' ' -f1)"
           echo "wrapper jar sha256: $actual_jar"
-          test "$actual_jar" = "4984950aa511b11f06a7e1a48e1fef9b19473d528f2eb47bceac1ffa6b68f36d"
+          test "$actual_jar" = "498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
           grep -Fxq 'distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-bin.zip' gradle/wrapper/gradle-wrapper.properties
           if ! grep -q '^distributionSha256Sum=' gradle/wrapper/gradle-wrapper.properties; then
             printf '\ndistributionSha256Sum=%s\n' 'd725d707bfabd4dfdc958c624003b3c80accc03f7037b5122c4b1d0ef15cecab' >> gradle/wrapper/gradle-wrapper.properties
